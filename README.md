@@ -1,4 +1,4 @@
-# AGRILINKO (By Group 7 - BSIT 3ST)
+# KALORIYA (By Group 7 - BSIT 3ST)
 > Requirements for CIT 236 - Client Server Technologies and Applications
 > Submitted to Ma'am Simbran
 
