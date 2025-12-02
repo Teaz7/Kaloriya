@@ -4,25 +4,24 @@ const bcrypt = require("bcrypt");
 const bodyParser = require("body-parser");
 const db = require("./models/usermodels");
 
+const date = new Date().toISOString().split("T")[0];
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Register a new user
 app.post("/register", async (req, res) => {
-  const { username, email, password } = req.body;
+  const { fullname, email, password, age, gender, height, weight } = req.body;
 
-  if (!username || !email || !password)
+  if (!fullname || !email || !password || !age || !gender || !height || !weight)
     return res.status(400).json({ error: "All fields are required." });
 
   try {
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insert into database
     db.run(
-      `INSERT INTO users (username, email, password) VALUES (?, ?, ?)`,
-      [username, email, hashedPassword],
+      `INSERT INTO user (full_name, email, password, age, gender, height, weight, activity_level, created_at) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [fullname, email, hashedPassword, age, gender, height, weight, "", date],
       function (err) {
         if (err) {
           console.error(err);
@@ -39,20 +38,18 @@ app.post("/register", async (req, res) => {
   }
 });
 
-//  Get all users (for testing)
-app.get("/users", (req, res) => {
-  db.all(`SELECT id, username, email FROM users`, [], (err, rows) => {
+app.get("/user", (req, res) => {
+  db.all(`SELECT user_id, full_name, email FROM user`, [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
 
 
-// Get single user by ID
-app.get("/users/:id", (req, res) => {
+app.get("/user/:id", (req, res) => {
   const { id } = req.params;
 
-  db.get(`SELECT id, username, email FROM users WHERE id = ?`, [id], (err, row) => {
+  db.get(`SELECT user_id, full_name, email FROM users WHERE id = ?`, [id], (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
 
     if (!row) return res.status(404).json({ error: "User not found." });
@@ -64,16 +61,15 @@ app.get("/users/:id", (req, res) => {
 
 
 
-// User Login
 app.post("/login", (req, res) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
-  if (!username || !password)
-    return res.status(400).json({ error: "Username and password are required." });
+  if (!email || !password)
+    return res.status(400).json({ error: "Email and password are required." });
 
   db.get(
-    `SELECT * FROM users WHERE username = ?`,
-    [username],
+    `SELECT * FROM user WHERE email = ?`,
+    [email],
     async (err, user) => {
       if (err) return res.status(500).json({ error: "Database error." });
 
@@ -99,10 +95,10 @@ app.post("/login", (req, res) => {
 });
 
 
-app.delete("/users/:id", (req, res) => {
+app.delete("/user/:id", (req, res) => {
   const { id } = req.params;
 
-  db.run(`DELETE FROM users WHERE id = ?`, [id], function (err) {
+  db.run(`DELETE FROM user WHERE user_id = ?`, [id], function (err) {
     if (err) return res.status(500).json({ error: err.message });
 
     if (this.changes === 0)
@@ -114,13 +110,13 @@ app.delete("/users/:id", (req, res) => {
 
 
 
-app.put("/users/:id", (req, res) => {
+app.put("/user/:id", (req, res) => {
   const { id } = req.params;
-  const { username, email } = req.body;
+  const { fullname, email } = req.body;
 
   db.run(
-    `UPDATE users SET username = ?, email = ? WHERE id = ?`,
-    [username, email, id],
+    `UPDATE user SET full_name = ?, email = ? WHERE user_id = ?`,
+    [fullname, email, id],
     function (err) {
       if (err) return res.status(500).json({ error: err.message });
 
@@ -135,6 +131,5 @@ app.put("/users/:id", (req, res) => {
 
 
 
-// Start server
 const PORT = 5000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
