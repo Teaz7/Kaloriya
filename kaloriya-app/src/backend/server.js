@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const bodyParser = require("body-parser");
+const request = require("request");
 const db = require("./models/usermodels");
 
 const date = new Date().toISOString().split("T")[0];
@@ -126,6 +127,21 @@ app.put("/user/:id", (req, res) => {
       res.json({ message: "User updated successfully!" });
     }
   );
+});
+
+
+
+app.get("/nutrition", (req, res) => {
+    const query = req.query.food;
+
+    request.get({
+        url: "https://api.calorieninjas.com/v1/nutrition?query=" + query,
+        headers: { "X-Api-Key": "dGVzPeFLQoCdbcEC1wKE8A==bfiTzccHJBpbHTKi" }
+    }, (error, response, body) => {
+        if (error) return res.status(500).json({ error });
+        if (response.statusCode !== 200) return res.status(400).send(body);
+        res.send(body);
+    });
 });
 
 
