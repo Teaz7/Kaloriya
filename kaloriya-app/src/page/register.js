@@ -1,4 +1,4 @@
-import AuthLayout from "../layout/AuthLayout";
+import RegisterLayout from "../layout/registerLayout";
 import { useState } from "react";
 
 const Register = () => {
@@ -45,7 +45,7 @@ const Register = () => {
   };
 
   return (
-    <AuthLayout>
+    <RegisterLayout>
       <h2 style={{ textAlign: "center", marginBottom: "1.5rem", color: "#37715B", fontSize: "36px" }}>
           REGISTRATION
         </h2>
@@ -164,7 +164,7 @@ const Register = () => {
           </p>
         )}
       </form>
-    </AuthLayout>
+    </RegisterLayout>
   );
 };
 
