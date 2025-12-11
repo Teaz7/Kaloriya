@@ -7,16 +7,19 @@ const ApiTest = () => {
     const [result, setResult] = useState(null);
 
     const handleClick = async () => {
-        const res = await fetch(`http://localhost:5000/nutrition?food=${query}`);
-
-        const text = await res.text();
-        console.log(text);
-
         try {
-        const data = JSON.parse(text);
+        const res = await fetch("http://localhost:5000/api/nutrition/ingredient", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ingredient: query }),
+        });
+
+        const data = await res.json();
+        console.log(data);
+
         setResult(data);
         } catch (err) {
-        console.error("JSON parse error:", err);
+        console.error("Error fetching nutrition data:", err);
         }
     };
 

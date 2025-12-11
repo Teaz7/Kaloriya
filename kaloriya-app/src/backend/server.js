@@ -7,8 +7,10 @@ const db = require("./models/usermodels");
 
 const date = new Date().toISOString().split("T")[0];
 const app = express();
+
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.json());
 
 app.post("/register", async (req, res) => {
   const { fullname, email, password, age, gender, height, weight } = req.body;
@@ -129,19 +131,35 @@ app.put("/user/:id", (req, res) => {
   );
 });
 
+//Avocavo Nutrition
+app.post("/api/nutrition/ingredient", (req, res) => {
+  console.log("Received request:", req.body);
 
+  const { ingredient } = req.body;
 
-app.get("/nutrition", (req, res) => {
-    const query = req.query.food;
+  const options = {
+    url: "https://app.avocavo.app/api/v2/nutrition/ingredient",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-API-Key": "sk_welcome_api_key_098adnj59tzfgekyg7xn6vl",
+    },
+    body: JSON.stringify({ ingredient }),
+  };
 
-    request.get({
-        url: "https://api.calorieninjas.com/v1/nutrition?query=" + query,
-        headers: { "X-Api-Key": "dGVzPeFLQoCdbcEC1wKE8A==bfiTzccHJBpbHTKi" }
-    }, (error, response, body) => {
-        if (error) return res.status(500).json({ error });
-        if (response.statusCode !== 200) return res.status(400).send(body);
-        res.send(body);
-    });
+  request(options, (error, response, body) => {
+    if (error) {
+      console.error("Error:", error);
+      return res.status(500).json({ error: "Request failed" });
+    }
+
+    try {
+      const data = JSON.parse(body);
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to parse response" });
+    }
+  });
 });
 
 
