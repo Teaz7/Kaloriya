@@ -14,6 +14,7 @@ export default function App() {
       <Route path="/register" element={<Register />} />
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/meal" element={<MealPlanner />} />
         <Route path="/bmi" element={<BMICalculator />} />
       </Route>
       <Route path="/apitest" element={<ApiTest />} />

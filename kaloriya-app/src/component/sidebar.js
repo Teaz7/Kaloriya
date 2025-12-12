@@ -17,7 +17,7 @@ const Sidebar = () => {
                 
 
             <Link to="/dashboard" style={linkStyle}>Dashboard</Link>
-            <Link to="/" style={linkStyle}>Meal Planner</Link>
+            <Link to="/meal" style={linkStyle}>Meal Planner</Link>
             <NavLink to="/bmi" style={linkStyle}>BMI Calculator</NavLink>
             <Link to="/" style={linkStyle}>Settings</Link>
             <Link to="/" style={linkStyle}>Logout</Link>

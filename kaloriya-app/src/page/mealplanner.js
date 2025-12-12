@@ -1,9 +1,6 @@
-import React, { useState, useEffect } from "react";
-import DashboardLayout from "../layout/dashboardlayout";
+import React, { useState } from "react";
 
 export default function MealPlanner() {
-  const [selectedNav, setSelectedNav] = useState('Meal Planner');
-  
   const days = [
     { name: 'SUNDAY', date: 'NOV. 23, 2025' },
     { name: 'MONDAY', date: 'NOV. 24, 2025' },
@@ -28,58 +25,13 @@ export default function MealPlanner() {
     container: {
       display: 'flex',
       minHeight: '100vh',
-      backgroundColor: '#f5f5f5',
       fontFamily: 'Arial, sans-serif'
-    },
-    sidebar: {
-      width: '200px',
-      backgroundColor: '#2d5f4f',
-      color: 'white',
-      padding: '20px',
-      display: 'flex',
-      flexDirection: 'column'
-    },
-    logo: {
-      fontSize: '24px',
-      fontWeight: 'bold',
-      marginBottom: '10px',
-      letterSpacing: '2px'
-    },
-    logoUnderline: {
-      height: '2px',
-      backgroundColor: 'white',
-      marginBottom: '40px'
-    },
-    navItem: {
-      padding: '12px 15px',
-      marginBottom: '10px',
-      cursor: 'pointer',
-      borderRadius: '4px',
-      fontSize: '14px'
-    },
-    navItemActive: {
-      backgroundColor: 'white',
-      color: '#2d5f4f'
-    },
-    navItemInactive: {
-      backgroundColor: 'transparent'
-    },
-    logoutBtn: {
-      marginTop: 'auto',
-      padding: '12px',
-      backgroundColor: 'white',
-      color: '#2d5f4f',
-      border: 'none',
-      borderRadius: '25px',
-      cursor: 'pointer',
-      fontWeight: 'bold',
-      fontSize: '14px'
     },
     mainContent: {
       flex: 1,
-      padding: '40px',
       display: 'flex',
-      gap: '30px'
+      gap: '10px',
+
     },
     plannerSection: {
       flex: 1
@@ -128,7 +80,7 @@ export default function MealPlanner() {
     },
     tableHeader: {
       display: 'grid',
-      gridTemplateColumns: '180px repeat(3, 170px)',
+      gridTemplateColumns: '1fr repeat(3, 1fr)',
       gap: '10px',
       marginBottom: '10px'
     },
@@ -148,7 +100,7 @@ export default function MealPlanner() {
     },
     dayRow: {
       display: 'grid',
-      gridTemplateColumns: '180px repeat(3, 170px)',
+      gridTemplateColumns: '1fr repeat(3, 1fr)',
       gap: '10px'
     },
     dayCell: {
@@ -192,13 +144,11 @@ export default function MealPlanner() {
       fontSize: '13px'
     },
     historySection: {
-      width: '300px',
+      width: '200px',
       backgroundColor: '#D8FCCB',
       borderRadius: '40px',
       padding: '40px',
       paddingTop: '85px',
-      height: 'fit-content',
-      marginRight: '240px',
       marginTop: '37px'
     },
     historyHeader: {
@@ -229,53 +179,6 @@ export default function MealPlanner() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.sidebar}>
-        <div style={styles.logo}>KALORIYA</div>
-        <div style={styles.logoUnderline}></div>
-        
-        <div 
-          style={{
-            ...styles.navItem, 
-            ...(selectedNav === 'Dashboard' ? styles.navItemActive : styles.navItemInactive)
-          }}
-          onClick={() => setSelectedNav('Dashboard')}
-        >
-          Dashboard
-        </div>
-        
-        <div 
-          style={{
-            ...styles.navItem, 
-            ...(selectedNav === 'Meal Planner' ? styles.navItemActive : styles.navItemInactive)
-          }}
-          onClick={() => setSelectedNav('Meal Planner')}
-        >
-          Meal Planner
-        </div>
-        
-        <div 
-          style={{
-            ...styles.navItem, 
-            ...(selectedNav === 'BMI Calculator' ? styles.navItemActive : styles.navItemInactive)
-          }}
-          onClick={() => setSelectedNav('BMI Calculator')}
-        >
-          BMI Calculator
-        </div>
-        
-        <div 
-          style={{
-            ...styles.navItem, 
-            ...(selectedNav === 'Settings' ? styles.navItemActive : styles.navItemInactive)
-          }}
-          onClick={() => setSelectedNav('Settings')}
-        >
-          Settings
-        </div>
-        
-        <button style={styles.logoutBtn}>LOG OUT</button>
-      </div>
-
       <div style={styles.mainContent}>
         <div style={styles.plannerSection}>
           <h1 style={styles.header}>MEAL PLANNER</h1>
