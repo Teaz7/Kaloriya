@@ -1,7 +1,18 @@
-import React, { useMemo, useState } from 'react';
-
+import React, { useMemo, useState, useEffect } from 'react';
 
 export default function BMICalculator() {
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  // Get user ID from localStorage (set during login)
+  const userFromStorage = JSON.parse(localStorage.getItem('user') || '{}');
+  const USER_ID = userFromStorage.id;
+  const API_URL = 'http://localhost:5000/api';
+  
+  console.log('User from localStorage:', userFromStorage);
+  console.log('USER_ID:', USER_ID);
+  
   // Colors from the screenshot
   const colors = {
     darkGreen: '#2F6F55',
@@ -19,7 +30,7 @@ export default function BMICalculator() {
 
   const radius = 12;
 
-  const [tab, setTab] = useState('standard'); // 'standard' | 'metric'
+  const [tab, setTab] = useState('standard');
   const [gender, setGender] = useState('M');
   const [age, setAge] = useState('');
   const [heightFt, setHeightFt] = useState('');
@@ -28,19 +39,85 @@ export default function BMICalculator() {
   const [weightKg, setWeightKg] = useState('');
   const [bmi, setBmi] = useState(null);
 
+  useEffect(() => {
+    loadHistory();
+  }, []);
+
+  const loadHistory = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/bmi/${USER_ID}`);
+      if (!response.ok) throw new Error('Failed to load history');
+      const data = await response.json();
+      
+      // Transform database data to match UI format
+      const formattedHistory = data.map(item => ({
+        value: parseFloat(item.bmi_value),
+        status: getBMIStatus(item.bmi_value),
+        timestamp: new Date(item.date_computed).getTime()
+      }));
+      
+      setHistory(formattedHistory);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load history. Make sure the server is running.');
+      console.error('Error loading history:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getBMIStatus = (bmiValue) => {
+    if (bmiValue < 18.5) return 'Underweight';
+    if (bmiValue < 25) return 'Normal';
+    if (bmiValue < 30) return 'Overweight';
+    if (bmiValue < 35) return 'Obese';
+    return 'Extremely Obese';
+  };
+
+  const saveToDatabase = async (bmiValue, heightValue, weightValue) => {
+    try {
+      const payload = {
+        user_id: USER_ID,
+        bmi_value: parseFloat(bmiValue),
+        height_used: parseFloat(heightValue),
+        weight_used: parseFloat(weightValue),
+      };
+      
+      console.log('Saving BMI with payload:', payload);
+      
+      const response = await fetch(`${API_URL}/bmi`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Server error:', errorData);
+        throw new Error(errorData.error || 'Failed to save BMI');
+      }
+      
+      const data = await response.json();
+      console.log('BMI saved successfully:', data);
+      
+      await loadHistory();
+      setError(null);
+    } catch (err) {
+      setError(`Failed to save to database: ${err.message}`);
+      console.error('Error saving BMI:', err);
+    }
+  };
+
   const result = useMemo(() => {
     if (bmi == null) return null;
-    let status = 'Normal';
-    if (bmi < 18.5) status = 'Underweight';
-    else if (bmi < 25) status = 'Normal';
-    else if (bmi < 30) status = 'Overweight';
-    else if (bmi < 35) status = 'Obese';
-    else status = 'Extremely Obese';
+    const status = getBMIStatus(bmi);
     return { bmi: bmi.toFixed(1), status };
   }, [bmi]);
 
-  const calculate = (e) => {
-    e.preventDefault();
+  const calculate = () => {
     if (tab === 'standard') {
       const ft = parseFloat(heightFt);
       const lbs = parseFloat(weightLbs);
@@ -48,6 +125,7 @@ export default function BMICalculator() {
       const inches = ft * 12;
       const bmiVal = (lbs / (inches * inches)) * 703;
       setBmi(bmiVal);
+      saveToDatabase(bmiVal.toFixed(1), ft, lbs);
     } else {
       const cm = parseFloat(heightCm);
       const kg = parseFloat(weightKg);
@@ -55,6 +133,7 @@ export default function BMICalculator() {
       const m = cm / 100;
       const bmiVal = kg / (m * m);
       setBmi(bmiVal);
+      saveToDatabase(bmiVal.toFixed(1), cm, kg);
     }
   };
 
@@ -68,16 +147,50 @@ export default function BMICalculator() {
     setBmi(null);
   };
 
+  const clearHistory = async () => {
+    if (window.confirm('Are you sure you want to clear all history?')) {
+      setHistory([]);
+      // Note: You might want to add a backend endpoint to delete all BMI records
+    }
+  };
+
+  const formatTimeAgo = (timestamp) => {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    const weeks = Math.floor(diff / 604800000);
+
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes} min ago`;
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`;
+    return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+  };
+
   const labelStyle = { color: colors.grayText, fontWeight: 600, marginBottom: 6 };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 10}}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 10, fontFamily: 'system-ui, sans-serif' }}>
       <div>
         <h1 style={{ color: colors.darkGreen, letterSpacing: 1, fontSize: 36, marginBottom: 12 }}>
           BMI CALCULATOR
         </h1>
 
-        {/* Tabs */}
+        {error && (
+          <div style={{
+            background: '#fee',
+            color: '#c00',
+            padding: '12px',
+            borderRadius: radius,
+            marginBottom: 16,
+            fontWeight: 600
+          }}>
+            {error}
+          </div>
+        )}
+
         <div
           style={{
             display: 'inline-flex',
@@ -116,7 +229,6 @@ export default function BMICalculator() {
           </button>
         </div>
 
-        {/* Form + Result card */}
         <div
           style={{
             display: 'grid',
@@ -125,8 +237,7 @@ export default function BMICalculator() {
             alignItems: 'start'
           }}
         >
-          <form
-            onSubmit={calculate}
+          <div
             style={{
               background: colors.lighterGreen,
               padding: 16,
@@ -316,7 +427,8 @@ export default function BMICalculator() {
                 Clear
               </button>
               <button
-                type="submit"
+                type="button"
+                onClick={calculate}
                 style={{
                   flex: 1,
                   background: colors.mediumGreen,
@@ -331,9 +443,8 @@ export default function BMICalculator() {
                 Calculate
               </button>
             </div>
-          </form>
+          </div>
 
-          {/* Result card */}
           <div
             style={{
               background: colors.lighterGreen,
@@ -381,7 +492,6 @@ export default function BMICalculator() {
           </div>
         </div>
 
-        {/* BMI Range */}
         <div style={{ marginTop: 24 }}>
           <h3 style={{ color: colors.darkGreen, fontSize: 20, marginBottom: 12 }}>BMI Range</h3>
           <div style={{ display: 'grid', gap: 10 }}>
@@ -394,7 +504,6 @@ export default function BMICalculator() {
         </div>
       </div>
 
-      {/* History panel */}
       <aside
         style={{
           background: colors.lightGreen,
@@ -403,28 +512,67 @@ export default function BMICalculator() {
           height: 'fit-content'
         }}
       >
-        <h3 style={{ color: colors.darkGreen, fontSize: 22, fontWeight: 800, marginBottom: 12 }}>
-          USER BMI HISTORY
-        </h3>
-        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 10 }}>
-          {dummyHistory.map((h, i) => (
-            <li
-              key={i}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <h3 style={{ color: colors.darkGreen, fontSize: 22, fontWeight: 800, margin: 0 }}>
+            USER BMI HISTORY
+          </h3>
+          {history.length > 0 && (
+            <button
+              onClick={clearHistory}
               style={{
-                background: colors.lighterGreen,
-                padding: '10px 12px',
+                background: colors.darkGreen,
+                color: colors.white,
+                border: 'none',
                 borderRadius: radius,
-                display: 'flex',
-                justifyContent: 'space-between',
-                color: colors.darkGreen,
-                fontWeight: 600
+                padding: '6px 12px',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer'
               }}
             >
-              <span>{h.value} ({h.status})</span>
-              <span style={{ color: colors.grayText }}>{h.when}</span>
-            </li>
-          ))}
-        </ul>
+              Clear
+            </button>
+          )}
+        </div>
+        {loading ? (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '24px 16px', 
+            color: colors.grayText,
+            fontWeight: 600
+          }}>
+            Loading history...
+          </div>
+        ) : history.length === 0 ? (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '24px 16px', 
+            color: colors.grayText,
+            fontWeight: 600
+          }}>
+            No history yet. Calculate your BMI to start tracking!
+          </div>
+        ) : (
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 10 }}>
+            {history.map((h, i) => (
+              <li
+                key={i}
+                style={{
+                  background: colors.lighterGreen,
+                  padding: '10px 12px',
+                  borderRadius: radius,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  color: colors.darkGreen,
+                  fontWeight: 600
+                }}
+              >
+                <span>{h.value.toFixed(1)} ({h.status})</span>
+                <span style={{ color: colors.grayText }}>{formatTimeAgo(h.timestamp)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </aside>
     </div>
   );
@@ -448,15 +596,3 @@ function RangeRow({ color, label, range, radius, dark = false }) {
     </div>
   );
 }
-
-const dummyHistory = [
-  { value: 21.8, status: 'Normal', when: '1 day ago' },
-  { value: 22.2, status: 'Normal', when: '2 days ago' },
-  { value: 22, status: 'Normal', when: '3 days ago' },
-  { value: 24.5, status: 'Normal', when: '5 days ago' },
-  { value: 25, status: 'Overweight', when: '6 days ago' },
-  { value: 27.5, status: 'Overweight', when: '1 week ago' },
-  { value: 29, status: 'Overweight', when: '1 week ago' },
-  { value: 29.5, status: 'Overweight', when: '1 week ago' },
-  { value: 30, status: 'Overweight', when: '1 week ago' }
-];

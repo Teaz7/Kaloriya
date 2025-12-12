@@ -10,7 +10,20 @@ const app = express();
 
 app.use(cors());
 app.use(bodyParser.json());
+
 app.use(express.json());
+
+db.run(
+    `CREATE TABLE IF NOT EXISTS bmi_log (
+        bmi_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        bmi_value REAL,
+        height_used REAL,
+        weight_used REAL,
+        date_computed TEXT,
+        FOREIGN KEY (user_id) REFERENCES user(user_id)
+    )`
+);
 
 app.post("/register", async (req, res) => {
   const { fullname, email, password, age, gender, height, weight } = req.body;
@@ -61,7 +74,47 @@ app.get("/user/:id", (req, res) => {
   });
 });
 
+app.post("/api/bmi", (req, res) => {
+    const { user_id, bmi_value, height_used, weight_used} = req.body;
+    
+    if (!user_id || !bmi_value || !height_used || !weight_used) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+    
+    db.run(
+        `INSERT INTO bmi_log 
+         (user_id, bmi_value, height_used, weight_used, date_computed) 
+         VALUES (?, ?, ?, ?, datetime('now', 'localtime'))`,
+        [user_id, bmi_value, height_used, weight_used,],
+        function(err) {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            res.json({
+                bmi_id: this.lastID,
+                message: "BMI log added successfully"
+            });
+        }
+    );
+});
 
+app.get("/api/bmi/:userId", (req, res) => {
+    const { userId } = req.params;
+    
+    db.all(
+        `SELECT * FROM bmi_log 
+         WHERE user_id = ? 
+         ORDER BY date_computed DESC 
+         LIMIT 20`,
+        [userId],
+        (err, rows) => {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            res.json(rows);
+        }
+    );
+});
 
 
 app.post("/login", (req, res) => {
@@ -85,11 +138,12 @@ app.post("/login", (req, res) => {
       if (!isMatch)
         return res.status(400).json({ error: "Incorrect password." });
 
+      // FIXED: Changed user.id to user.user_id and user.username to user.full_name
       res.json({
         message: "Login successful!",
         user: {
-          id: user.id,
-          username: user.username,
+          id: user.user_id,
+          username: user.full_name,
           email: user.email,
         },
       });
@@ -130,6 +184,8 @@ app.put("/user/:id", (req, res) => {
     }
   );
 });
+
+  
 
 //Avocavo Nutrition
 app.post("/api/nutrition/ingredient", (req, res) => {
