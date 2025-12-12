@@ -14,7 +14,7 @@ const Sidebar = () => {
         >
             <h3 style={{fontWeight: "bold", fontSize: "30px"}}>KALORIYA</h3>
 
-            <div style={{backgroundColor: "white", height: "0.5vh", marginTop: "-2vh", marginBottom: "2vh"}}></div>
+                
 
             <Link to="/dashboard" style={linkStyle}>Dashboard</Link>
             <Link to="/" style={linkStyle}>Meal Planner</Link>

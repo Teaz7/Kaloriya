@@ -1,12 +1,12 @@
-import AuthLayout from "../layout/AuthLayout";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import LoginLayout from "../layout/loginLayout";
 
 const Login = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    username: "",
+    email: "",
     password: "",
   });
 
@@ -53,16 +53,16 @@ const Login = () => {
   };
 
   return (
-    <AuthLayout>
-        <h2 style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-          User Login
+    <LoginLayout>
+        <h2 style={{ textAlign: "center", marginBottom: "1.5rem", color: "#37715B", fontSize: "48px" }}>
+          KALORIYA
         </h2>
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "1rem" }}>
-          <label>Username</label>
+        <div style={{ marginBottom: "1rem", color: "#37715B" }}>
+          <label>Email Address:</label>
           <input
             type="text"
-            name="username"
+            name="email"
             value={formData.username}
             onChange={handleChange}
             required
@@ -70,8 +70,8 @@ const Login = () => {
           />
         </div>
 
-        <div style={{ marginBottom: "1.5rem" }}>
-          <label>Password</label>
+        <div style={{ marginBottom: "1.5rem", color: "#37715B" }}>
+          <label>Password:</label>
           <input
             type="password"
             name="password"
@@ -82,9 +82,11 @@ const Login = () => {
           />
         </div>
 
-        <button type="submit" style={buttonStyle}>
-          Login
-        </button>
+        <div style={{ textAlign: "center" }}>
+          <button type="submit" style={buttonStyle}>
+            LOGIN
+          </button>
+        </div>
 
         {message && (
           <p style={{ marginTop: "1rem", color: "#2563eb", fontWeight: "bold" }}>
@@ -92,26 +94,27 @@ const Login = () => {
           </p>
         )}
       </form>
-    </AuthLayout>
+    </LoginLayout>
   );
 };
 
 const inputStyle = {
   width: "100%",
-  padding: "0.6rem",
+  padding: "0.4rem 0.2rem",
   marginTop: "0.3rem",
-  borderRadius: "6px",
-  border: "1px solid #cbd5e1",
+  borderRadius: "10px",
+  border: "2px solid #37715B",
   outline: "none",
+  color: "#37715B"
 };
 
 const buttonStyle = {
-  width: "100%",
-  backgroundColor: "#2563eb",
+  width: "60%",
+  backgroundColor: "#37715B",
   color: "white",
   padding: "0.7rem",
   border: "none",
-  borderRadius: "6px",
+  borderRadius: "7px",
   cursor: "pointer",
   fontWeight: "bold",
 };

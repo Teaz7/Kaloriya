@@ -2,12 +2,15 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const bodyParser = require("body-parser");
+const request = require("request");
 const db = require("./models/usermodels");
 
 const date = new Date().toISOString().split("T")[0];
 const app = express();
+
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.json());
 
 app.post("/register", async (req, res) => {
   const { fullname, email, password, age, gender, height, weight } = req.body;
@@ -126,6 +129,37 @@ app.put("/user/:id", (req, res) => {
       res.json({ message: "User updated successfully!" });
     }
   );
+});
+
+//Avocavo Nutrition
+app.post("/api/nutrition/ingredient", (req, res) => {
+  console.log("Received request:", req.body);
+
+  const { ingredient } = req.body;
+
+  const options = {
+    url: "https://app.avocavo.app/api/v2/nutrition/ingredient",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-API-Key": "sk_welcome_api_key_098adnj59tzfgekyg7xn6vl",
+    },
+    body: JSON.stringify({ ingredient }),
+  };
+
+  request(options, (error, response, body) => {
+    if (error) {
+      console.error("Error:", error);
+      return res.status(500).json({ error: "Request failed" });
+    }
+
+    try {
+      const data = JSON.parse(body);
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to parse response" });
+    }
+  });
 });
 
 
