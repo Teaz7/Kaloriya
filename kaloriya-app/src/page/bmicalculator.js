@@ -71,7 +71,7 @@ export default function BMICalculator() {
   const labelStyle = { color: colors.grayText, fontWeight: 600, marginBottom: 6 };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24, padding: 24 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 10}}>
       <div>
         <h1 style={{ color: colors.darkGreen, letterSpacing: 1, fontSize: 36, marginBottom: 12 }}>
           BMI CALCULATOR
