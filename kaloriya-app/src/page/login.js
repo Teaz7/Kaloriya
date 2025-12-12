@@ -29,12 +29,15 @@ const Login = () => {
       });
 
       const data = await response.json();
+      
+      console.log("Login response:", data); // Debug log
 
       if (response.ok) {
         setMessage("Login successful!");
 
-        // OPTIONAL: save user session
+        // Save user session
         localStorage.setItem("user", JSON.stringify(data.user));
+        console.log("Saved to localStorage:", data.user); // Debug log
 
         // Redirect to dashboard
         setTimeout(() => {
@@ -42,7 +45,7 @@ const Login = () => {
         }, 800);
 
         // Clear fields
-        setFormData({ username: "", password: "" });
+        setFormData({ email: "", password: "" }); // FIXED: was username
       } else {
         setMessage(data.error || "Login failed.");
       }
@@ -63,7 +66,7 @@ const Login = () => {
           <input
             type="text"
             name="email"
-            value={formData.username}
+            value={formData.email}  // FIXED: was formData.username
             onChange={handleChange}
             required
             style={inputStyle}
