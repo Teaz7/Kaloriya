@@ -1,15 +1,14 @@
-import Sidebar from "../component/sidebar";
+import React from 'react';
+import Sidebar from '../component/sidebar';
+import { Outlet } from 'react-router-dom';
 
-
-const DashboardLayout = ({ children }) => {
-    return (
-        <div style={{display: "flex", minHeight: "100vh"}}>
-            <Sidebar/>
-            <div style={{flex: 1, padding: "20px"}}>
-                {children}
-            </div>
-        </div>
-    );
-};
-
-export default DashboardLayout;
+export default function DashboardLayout() {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', minHeight: '100vh' }}>
+      <Sidebar />
+      <main style={{ padding: 24 }}>
+        <Outlet />
+      </main>
+    </div>
+  );
+}
