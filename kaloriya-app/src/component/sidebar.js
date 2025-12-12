@@ -1,4 +1,4 @@
-import {Link} from "react-router-dom"
+import {Link, NavLink} from "react-router-dom"
 
 const Sidebar = () => {
     return (
@@ -16,9 +16,9 @@ const Sidebar = () => {
 
                 
 
-            <Link to="/" style={linkStyle}>Dashboard</Link>
+            <Link to="/dashboard" style={linkStyle}>Dashboard</Link>
             <Link to="/" style={linkStyle}>Meal Planner</Link>
-            <Link to="/" style={linkStyle}>BMI Calculator</Link>
+            <NavLink to="/bmi" style={linkStyle}>BMI Calculator</NavLink>
             <Link to="/" style={linkStyle}>Settings</Link>
             <Link to="/" style={linkStyle}>Logout</Link>
         </aside>
