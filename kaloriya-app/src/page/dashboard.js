@@ -66,20 +66,6 @@ const Dashboard = () => {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif', background: '#f0f0f0' }}>
-      {/* Sidebar */}
-      <aside style={{ width: 214, background: '#3d6b5a', color: '#fff', padding: '36px 22px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-        <div>
-          <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 0, borderBottom: '3px solid #fff', paddingBottom: 10, letterSpacing: 0.5 }}>KALORIYA</h1>
-          <nav style={{ marginTop: 40 }}>
-            <div style={{ background: '#fff', color: '#3d6b5a', padding: '14px 16px', borderRadius: 6, marginBottom: 10, fontWeight: 600, cursor: 'pointer' }}>Dashboard</div>
-            <div style={{ padding: '14px 16px', cursor: 'pointer', color: '#d4e8e0', marginTop: 8 }}>Meal Planner</div>
-            <div style={{ padding: '14px 16px', cursor: 'pointer', marginTop: 8, color: '#d4e8e0' }}>BMI Calculator</div>
-            <div style={{ padding: '14px 16px', cursor: 'pointer', marginTop: 8, color: '#d4e8e0' }}>Settings</div>
-          </nav>
-        </div>
-        <button style={{ background: '#fff', color: '#3d6b5a', border: 'none', padding: '12px', borderRadius: 28, fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>LOG OUT</button>
-      </aside>
-
       {/* Main Content - 3 columns */}
       <main style={{ flex: 1, background: '#fff', padding: '32px 40px', display: 'flex', gap: 24 }}>
         {/* Left Column - Date and Meals */}
