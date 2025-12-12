@@ -66,24 +66,10 @@ const Dashboard = () => {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif', background: '#f0f0f0' }}>
-      {/* Sidebar */}
-      <aside style={{ width: 214, background: '#3d6b5a', color: '#fff', padding: '36px 22px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-        <div>
-          <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 0, borderBottom: '3px solid #fff', paddingBottom: 10, letterSpacing: 0.5 }}>KALORIYA</h1>
-          <nav style={{ marginTop: 40 }}>
-            <div style={{ background: '#fff', color: '#3d6b5a', padding: '14px 16px', borderRadius: 6, marginBottom: 10, fontWeight: 600, cursor: 'pointer' }}>Dashboard</div>
-            <div style={{ padding: '14px 16px', cursor: 'pointer', color: '#d4e8e0', marginTop: 8 }}>Meal Planner</div>
-            <div style={{ padding: '14px 16px', cursor: 'pointer', marginTop: 8, color: '#d4e8e0' }}>BMI Calculator</div>
-            <div style={{ padding: '14px 16px', cursor: 'pointer', marginTop: 8, color: '#d4e8e0' }}>Settings</div>
-          </nav>
-        </div>
-        <button style={{ background: '#fff', color: '#3d6b5a', border: 'none', padding: '12px', borderRadius: 28, fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>LOG OUT</button>
-      </aside>
-
       {/* Main Content - 3 columns */}
-      <main style={{ flex: 1, background: '#fff', padding: '32px 40px', display: 'flex', gap: 24 }}>
+      <main style={{ flex: 1, background: '#fff', display: 'flex', gap: 10, overflow: "hidden" }}>
         {/* Left Column - Date and Meals */}
-        <div style={{ flex: '0 0 48%' }}>
+        <div style={{ flex: '0 0 20%' }}>
           {/* Header */}
           <div style={{ marginBottom: 32 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 20, color: '#2d5f4f', marginBottom: 14 }}>
@@ -124,7 +110,7 @@ const Dashboard = () => {
               <div style={{ fontSize: 12, color: '#fff', marginTop: 6 }}>Estimated Calorie Intake:</div>
               <button style={{ background: '#5a9a74', color: '#fff', border: 'none', padding: '10px 24px', borderRadius: 10, fontWeight: 700, cursor: 'pointer', marginTop: 12, fontSize: 13 }}>Add Meal</button>
             </div>
-            <div style={{ width: 100, height: 100, border: '7px solid rgba(234,246,238,0.7)', borderRadius: '50%', position: 'absolute', right: -50, background: 'transparent' }} />
+            <div style={{ width: 100, height: 100, border: '7px solid rgba(234,246,238,0.7)', borderRadius: '50%', position: 'absolute', right: 30, background: 'transparent' }} />
           </div>
 
           {/* Lunch */}
@@ -135,7 +121,7 @@ const Dashboard = () => {
               <div style={{ fontSize: 12, color: '#fff', marginTop: 6 }}>Estimated Calorie Intake:</div>
               <button style={{ background: '#37715b', color: '#fff', border: 'none', padding: '10px 24px', borderRadius: 10, fontWeight: 700, cursor: 'pointer', marginTop: 12, fontSize: 13 }}>Add Meal</button>
             </div>
-            <div style={{ width: 100, height: 100, border: '7px solid rgba(234,246,238,0.5)', borderRadius: '50%', position: 'absolute', right: -50, background: 'transparent' }} />
+            <div style={{ width: 100, height: 100, border: '7px solid rgba(234,246,238,0.5)', borderRadius: '50%', position: 'absolute', right: 30, background: 'transparent' }} />
           </div>
 
           {/* Dinner */}
@@ -146,7 +132,7 @@ const Dashboard = () => {
               <div style={{ fontSize: 12, color: '#fff', marginTop: 6 }}>Estimated Calorie Intake:</div>
               <button style={{ background: '#2d5f4f', color: '#fff', border: 'none', padding: '10px 24px', borderRadius: 10, fontWeight: 700, cursor: 'pointer', marginTop: 12, fontSize: 13 }}>Add Meal</button>
             </div>
-            <div style={{ width: 100, height: 100, border: '7px solid rgba(234,246,238,0.35)', borderRadius: '50%', position: 'absolute', right: -50, background: 'transparent' }} />
+            <div style={{ width: 100, height: 100, border: '7px solid rgba(234,246,238,0.35)', borderRadius: '50%', position: 'absolute', right: 30, background: 'transparent' }} />
           </div>
 
           <button style={{ background: '#2d5f4f', color: '#fff', border: 'none', padding: '12px 26px', borderRadius: 10, fontWeight: 700, cursor: 'pointer', marginTop: 12, fontSize: 14 }}>Check Other Meals</button>
@@ -158,7 +144,7 @@ const Dashboard = () => {
           <div>
             <h3 style={{ fontSize: 16, fontWeight: 800, color: '#4a5f57', marginBottom: 16 }}>Meal Suggestions</h3>
             {[1, 2, 3, 4].map(i => (
-              <div key={i} style={{ background: '#5a5a5a', padding: '14px 16px', borderRadius: 12, marginBottom: 12, display: 'flex', gap: 12, border: '2px solid #6a6a6a' }}>
+              <div key={i} style={{ background: '#5a5a5a', padding: '10px 16px', borderRadius: 12, marginBottom: 5, display: 'flex', gap: 12, border: '2px solid #6a6a6a' }}>
                 <div style={{ width: 60, height: 60, background: '#fff', borderRadius: 8, border: '2px solid #e0e0e0', flexShrink: 0 }} />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
                   <div style={{ fontSize: 13, color: '#fff', lineHeight: 1.4 }}>This meal with that side meal, drinks, etc.</div>
@@ -169,7 +155,7 @@ const Dashboard = () => {
           </div>
 
           {/* Macronutrients Progress */}
-          <div style={{ border: '2px solid #c5d4cc', borderRadius: 12, padding: 20, background: '#fff' }}>
+          <div style={{ border: '2px solid #c5d4cc', borderRadius: 12, padding: 10, background: '#fff' }}>
             <h3 style={{ fontSize: 15, fontWeight: 800, color: '#2d5f4f', marginBottom: 16 }}>Macronutrients Progress</h3>
             <div style={{ display: 'flex', gap: 18, marginBottom: 20, alignItems: 'center' }}>
               <div style={{ flexShrink: 0 }}>
