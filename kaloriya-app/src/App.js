@@ -16,8 +16,8 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/meal" element={<MealPlanner />} />
         <Route path="/bmi" element={<BMICalculator />} />
+        <Route path="/apitest" element={<ApiTest />} />
       </Route>
-      <Route path="/apitest" element={<ApiTest />} />
       <Route path="/mealplanner" element={<MealPlanner/>} />
     </Routes>
   );

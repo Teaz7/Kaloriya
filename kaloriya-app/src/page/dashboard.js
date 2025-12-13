@@ -1,13 +1,87 @@
 import React, { useState, useEffect } from "react";
-import DashboardLayout from "../layout/dashboardlayout"; // Assuming this handles the sidebar structure
 
 const Dashboard = () => {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
+  const [bmiHistory, setBmiHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const userFromStorage = JSON.parse(localStorage.getItem('user') || '{}');
+  const USER_ID = userFromStorage.id;
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentDateTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    loadBMIHistory();
+  }, []);
+
+  const loadBMIHistory = async () => {
+    setLoading(true);
+    try {
+      // Replace with your actual API URL
+      const API_URL = 'http://localhost:5000/api'; // Update this to your backend URL
+      const response = await fetch(`${API_URL}/bmi/${USER_ID}`);
+      
+      if (!response.ok) throw new Error('Failed to load history');
+      
+      const data = await response.json();
+      
+      // Transform database data to match UI format
+      const formattedHistory = data.map(item => ({
+        value: parseFloat(item.bmi_value),
+        status: getBMIStatus(item.bmi_value),
+        timestamp: new Date(item.date_computed).getTime(),
+        dateComputed: new Date(item.date_computed)
+      }));
+      
+      // Sort by most recent first
+      formattedHistory.sort((a, b) => b.timestamp - a.timestamp);
+      
+      setBmiHistory(formattedHistory);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load BMI history');
+      console.error('Error loading BMI history:', err);
+      
+      // Use placeholder data if API fails
+      setBmiHistory([
+        { value: 21.8, status: 'Normal', dateComputed: new Date(Date.now() - 86400000) },
+        { value: 22.2, status: 'Normal', dateComputed: new Date(Date.now() - 172800000) },
+        { value: 22.0, status: 'Normal', dateComputed: new Date(Date.now() - 259200000) },
+        { value: 24.5, status: 'Normal', dateComputed: new Date(Date.now() - 432000000) },
+        { value: 25.0, status: 'Overweight', dateComputed: new Date(Date.now() - 518400000) },
+        { value: 27.5, status: 'Overweight', dateComputed: new Date(Date.now() - 604800000) },
+        { value: 29.0, status: 'Overweight', dateComputed: new Date(Date.now() - 691200000) }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getBMIStatus = (bmiValue) => {
+    if (bmiValue < 18.5) return 'Underweight';
+    if (bmiValue < 25) return 'Normal';
+    if (bmiValue < 30) return 'Overweight';
+    if (bmiValue < 35) return 'Obese';
+    return 'Extremely Obese';
+  };
+
+  const getTimeAgo = (date) => {
+    const now = new Date();
+    const diffMs = now - date;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return '1 day ago';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 14) return '1 week ago';
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    if (diffDays < 60) return '1 month ago';
+    return `${Math.floor(diffDays / 30)} months ago`;
+  };
 
   const daysShort = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -66,11 +140,9 @@ const Dashboard = () => {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif', background: '#f0f0f0' }}>
-      {/* Main Content - 3 columns */}
-      <main style={{ flex: 1, background: '#fff', display: 'flex', gap: 10, overflow: "hidden" }}>
+      <main style={{ flex: 1, background: '#fff', display: 'flex', gap: 10, overflow: "hidden", padding: 20 }}>
         {/* Left Column - Date and Meals */}
         <div style={{ flex: '0 0 20%' }}>
-          {/* Header */}
           <div style={{ marginBottom: 32 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 20, color: '#2d5f4f', marginBottom: 14 }}>
               <div style={{ fontSize: 26, fontWeight: 800 }}>{formattedDate}</div>
@@ -99,7 +171,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Meal Cards */}
           <h2 style={{ fontSize: 22, fontWeight: 800, color: '#2d5f4f', marginBottom: 22, marginTop: 8 }}>Recommended Meals for the Day</h2>
 
           {/* Breakfast */}
@@ -140,7 +211,6 @@ const Dashboard = () => {
 
         {/* Middle Column - Suggestions and Macros */}
         <div style={{ flex: '0 0 28%', display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {/* Meal Suggestions */}
           <div>
             <h3 style={{ fontSize: 16, fontWeight: 800, color: '#4a5f57', marginBottom: 16 }}>Meal Suggestions</h3>
             {[1, 2, 3, 4].map(i => (
@@ -154,7 +224,6 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* Macronutrients Progress */}
           <div style={{ border: '2px solid #c5d4cc', borderRadius: 12, padding: 10, background: '#fff' }}>
             <h3 style={{ fontSize: 15, fontWeight: 800, color: '#2d5f4f', marginBottom: 16 }}>Macronutrients Progress</h3>
             <div style={{ display: 'flex', gap: 18, marginBottom: 20, alignItems: 'center' }}>
@@ -212,22 +281,28 @@ const Dashboard = () => {
               ))}
             </div>
 
-            <h3 style={{ fontSize: 15, fontWeight: 800, color: '#2d5f4f', marginBottom: 12, marginTop: 16 }}>Body Mass Index History</h3>
+            <h3 style={{ fontSize: 15, fontWeight: 800, color: '#2d5f4f', marginBottom: 12, marginTop: 16 }}>
+              Body Mass Index History
+              {loading && <span style={{ fontSize: 12, fontWeight: 400, marginLeft: 8 }}>(Loading...)</span>}
+            </h3>
             <div>
-              {[
-                { bmi: "21.8 (Normal)", when: "1 day ago" },
-                { bmi: "22.2 (Normal)", when: "2 days ago" },
-                { bmi: "22 (Normal)", when: "3 days ago" },
-                { bmi: "24.5 (Normal)", when: "5 days ago" },
-                { bmi: "25 (Overweight)", when: "6 days ago" },
-                { bmi: "27.5 (Overweight)", when: "1 week ago" },
-                { bmi: "29 (Overweight)", when: "1 week ago" }
-              ].map((b, idx) => (
-                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 14 }}>
-                  <div style={{ color: '#2d5f4f' }}>{b.bmi}</div>
-                  <div style={{ color: '#5a9a74', fontSize: 13 }}>{b.when}</div>
+              {error && (
+                <div style={{ color: '#c74444', fontSize: 12, marginBottom: 10, padding: 8, background: '#ffe8e8', borderRadius: 6 }}>
+                  {error}
                 </div>
-              ))}
+              )}
+              {bmiHistory.length > 0 ? (
+                bmiHistory.map((b, idx) => (
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 14 }}>
+                    <div style={{ color: '#2d5f4f' }}>
+                      {b.value.toFixed(1)} ({b.status})
+                    </div>
+                    <div style={{ color: '#5a9a74', fontSize: 13 }}>{getTimeAgo(b.dateComputed)}</div>
+                  </div>
+                ))
+              ) : !loading && (
+                <div style={{ color: '#666', fontSize: 13, fontStyle: 'italic' }}>No BMI history available</div>
+              )}
             </div>
           </div>
         </div>
