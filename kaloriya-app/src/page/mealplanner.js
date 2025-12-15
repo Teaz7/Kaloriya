@@ -9,12 +9,28 @@ export default function MealPlanner() {
   const [mealSlots, setMealSlots] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
 
-  const days = [
-    { name: 'SUNDAY', date: '2025-11-23', rowIndex: 0 },
-    { name: 'MONDAY', date: '2025-11-24', rowIndex: 1 },
-    { name: 'TUESDAY', date: '2025-11-25', rowIndex: 2 },
-    { name: 'WEDNESDAY', date: '2025-11-26', rowIndex: 3 }
-  ];
+  // Generate current week days dynamically - starting from today
+  const generateCurrentWeek = () => {
+    const today = new Date();
+    const weekDays = [];
+    const dayNames = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+    
+    // Generate 4 days starting from today
+    for (let i = 0; i < 4; i++) {
+      const day = new Date(today);
+      day.setDate(today.getDate() + i);
+      
+      weekDays.push({
+        name: dayNames[day.getDay()],
+        date: day.toISOString().split('T')[0], // Format: YYYY-MM-DD
+        rowIndex: i
+      });
+    }
+    
+    return weekDays;
+  };
+
+  const days = generateCurrentWeek();
 
   const meals = ['BREAKFAST', 'LUNCH', 'DINNER'];
 
@@ -132,12 +148,15 @@ export default function MealPlanner() {
         quantity: 1
       };
 
+      // Always use TODAY's date instead of the row date
+      const todayDate = new Date().toISOString().split('T')[0];
+
       const addMealRes = await fetch("http://localhost:5000/api/add-meal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_id: userId,
-          log_date: dayDate,
+          log_date: todayDate, // Always save to today
           meal_type: mealType,
           foods: [foodData]
         }),
@@ -189,8 +208,6 @@ export default function MealPlanner() {
       display: 'flex',
       minHeight: '100vh',
       fontFamily: 'Arial, sans-serif',
-      padding: '20px',
-      backgroundColor: '#f5f5f5'
     },
     mainContent: {
       flex: 1,

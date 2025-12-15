@@ -3,11 +3,15 @@ import React, { useState, useEffect } from "react";
 const Dashboard = () => {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [bmiHistory, setBmiHistory] = useState([]);
+  const [calorieHistory, setCalorieHistory] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [calorieLoading, setCalorieLoading] = useState(false);
 
   const userFromStorage = JSON.parse(localStorage.getItem('user') || '{}');
-  const USER_ID = userFromStorage.id;
+  const USER_ID = userFromStorage.id || 1;
+  
+  console.log("User from localStorage:", userFromStorage);
+  console.log("Using USER_ID:", USER_ID);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentDateTime(new Date()), 1000);
@@ -16,20 +20,82 @@ const Dashboard = () => {
 
   useEffect(() => {
     loadBMIHistory();
+    loadCalorieHistory();
   }, []);
+
+  const loadCalorieHistory = async () => {
+    setCalorieLoading(true);
+    try {
+      const API_URL = 'http://localhost:5000/api';
+      const response = await fetch(`${API_URL}/meal-log/${USER_ID}`);
+      
+      if (!response.ok) throw new Error('Failed to load meal history');
+      
+      const data = await response.json();
+      console.log("Meal logs:", data);
+      
+      // Group meals by date and calculate total calories
+      const caloriesByDate = {};
+      
+      // Process each meal log
+      for (const meal of data) {
+        const date = meal.log_date;
+        
+        // Get meal items for this meal log
+        const itemsResponse = await fetch(`${API_URL}/meal-item/${meal.meal_log_id}`);
+        const items = await itemsResponse.json();
+        console.log(`Items for meal ${meal.meal_log_id}:`, items);
+        
+        // Calculate total calories for this meal
+        const mealCalories = items.reduce((sum, item) => {
+          const calories = parseFloat(item.calories) || 0;
+          const quantity = parseFloat(item.quantity) || 1;
+          return sum + (calories * quantity);
+        }, 0);
+        
+        console.log(`Meal ${meal.meal_log_id} calories:`, mealCalories);
+        
+        // Add to date total
+        if (!caloriesByDate[date]) {
+          caloriesByDate[date] = {
+            total: 0,
+            date: new Date(date)
+          };
+        }
+        caloriesByDate[date].total += mealCalories;
+      }
+      
+      console.log("Calories by date:", caloriesByDate);
+      
+      // Convert to array and sort by most recent
+      const calorieArray = Object.values(caloriesByDate)
+        .map(item => ({
+          calories: Math.round(item.total),
+          date: item.date,
+          timestamp: item.date.getTime()
+        }))
+        .sort((a, b) => b.timestamp - a.timestamp);
+      
+      console.log("Final calorie array:", calorieArray);
+      setCalorieHistory(calorieArray);
+    } catch (err) {
+      console.error('Error loading calorie history:', err);
+      setCalorieHistory([]);
+    } finally {
+      setCalorieLoading(false);
+    }
+  };
 
   const loadBMIHistory = async () => {
     setLoading(true);
     try {
-      // Replace with your actual API URL
-      const API_URL = 'http://localhost:5000/api'; // Update this to your backend URL
+      const API_URL = 'http://localhost:5000/api';
       const response = await fetch(`${API_URL}/bmi/${USER_ID}`);
       
-      if (!response.ok) throw new Error('Failed to load history');
+      if (!response.ok) throw new Error('Failed to load BMI history');
       
       const data = await response.json();
       
-      // Transform database data to match UI format
       const formattedHistory = data.map(item => ({
         value: parseFloat(item.bmi_value),
         status: getBMIStatus(item.bmi_value),
@@ -37,25 +103,12 @@ const Dashboard = () => {
         dateComputed: new Date(item.date_computed)
       }));
       
-      // Sort by most recent first
       formattedHistory.sort((a, b) => b.timestamp - a.timestamp);
       
       setBmiHistory(formattedHistory);
-      setError(null);
     } catch (err) {
-      setError('Failed to load BMI history');
       console.error('Error loading BMI history:', err);
-      
-      // Use placeholder data if API fails
-      setBmiHistory([
-        { value: 21.8, status: 'Normal', dateComputed: new Date(Date.now() - 86400000) },
-        { value: 22.2, status: 'Normal', dateComputed: new Date(Date.now() - 172800000) },
-        { value: 22.0, status: 'Normal', dateComputed: new Date(Date.now() - 259200000) },
-        { value: 24.5, status: 'Normal', dateComputed: new Date(Date.now() - 432000000) },
-        { value: 25.0, status: 'Overweight', dateComputed: new Date(Date.now() - 518400000) },
-        { value: 27.5, status: 'Overweight', dateComputed: new Date(Date.now() - 604800000) },
-        { value: 29.0, status: 'Overweight', dateComputed: new Date(Date.now() - 691200000) }
-      ]);
+      setBmiHistory([]);
     } finally {
       setLoading(false);
     }
@@ -262,23 +315,21 @@ const Dashboard = () => {
         {/* Right Column - History Panel */}
         <div style={{ flex: '0 0 22%' }}>
           <div style={{ background: '#e9fbe8', padding: 20, borderRadius: 10, height: '100%', border: '1px solid #d5edd4' }}>
-            <h3 style={{ fontSize: 15, fontWeight: 800, color: '#2d5f4f', marginBottom: 14 }}>Daily Calorie Intake History</h3>
+            <h3 style={{ fontSize: 15, fontWeight: 800, color: '#2d5f4f', marginBottom: 14 }}>
+              Daily Calorie Intake History
+              {calorieLoading && <span style={{ fontSize: 12, fontWeight: 400, marginLeft: 8 }}>(Loading...)</span>}
+            </h3>
             <div style={{ borderBottom: '1.5px dashed #b8d4b6', paddingBottom: 14, marginBottom: 14 }}>
-              {[
-                { cal: "2000kCal", when: "1 day ago" },
-                { cal: "2300kCal", when: "2 days ago" },
-                { cal: "1950kCal", when: "3 days ago" },
-                { cal: "1900kCal", when: "5 days ago" },
-                { cal: "2510kCal", when: "6 days ago" },
-                { cal: "2230kCal", when: "1 week ago" },
-                { cal: "1890kCal", when: "1 week ago" },
-                { cal: "2050kCal", when: "1 week ago" }
-              ].map((h, idx) => (
-                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 14 }}>
-                  <div style={{ fontWeight: 700, color: '#2d5f4f' }}>{h.cal}</div>
-                  <div style={{ color: '#5a9a74', fontSize: 13 }}>{h.when}</div>
-                </div>
-              ))}
+              {calorieHistory.length > 0 ? (
+                calorieHistory.map((h, idx) => (
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 14 }}>
+                    <div style={{ fontWeight: 700, color: '#2d5f4f' }}>{h.calories}kCal</div>
+                    <div style={{ color: '#5a9a74', fontSize: 13 }}>{getTimeAgo(h.date)}</div>
+                  </div>
+                ))
+              ) : !calorieLoading && (
+                <div style={{ color: '#666', fontSize: 13, fontStyle: 'italic' }}>No calorie history available</div>
+              )}
             </div>
 
             <h3 style={{ fontSize: 15, fontWeight: 800, color: '#2d5f4f', marginBottom: 12, marginTop: 16 }}>
@@ -286,11 +337,6 @@ const Dashboard = () => {
               {loading && <span style={{ fontSize: 12, fontWeight: 400, marginLeft: 8 }}>(Loading...)</span>}
             </h3>
             <div>
-              {error && (
-                <div style={{ color: '#c74444', fontSize: 12, marginBottom: 10, padding: 8, background: '#ffe8e8', borderRadius: 6 }}>
-                  {error}
-                </div>
-              )}
               {bmiHistory.length > 0 ? (
                 bmiHistory.map((b, idx) => (
                   <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 14 }}>
